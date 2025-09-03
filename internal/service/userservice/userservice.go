@@ -1,10 +1,9 @@
 package userservice
 
 import (
-	"fmt"
-
 	erros "github.com/Dorrrke/project1308/internal/domain/user/errors"
 	"github.com/Dorrrke/project1308/internal/domain/user/models"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -27,13 +26,15 @@ func NewUserService(db UserStorage) *UserService {
 }
 
 func (us *UserService) SaveUser(user models.User) error {
-	// TODO: валидация
 	if err := us.valid.Struct(user); err != nil {
 		return err
 	}
 
-	fmt.Println()
-	// TODO: хеширование пароля
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hash)
 
 	return us.db.SaveUser(user)
 }
@@ -44,8 +45,7 @@ func (us *UserService) LoginUser(userReq models.UserRequest) (models.User, error
 		return models.User{}, err
 	}
 
-	// TODO: проверка хеша и пароля
-	if dbUser.Password != userReq.Password {
+	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userReq.Password)); err != nil {
 		return models.User{}, erros.ErrInvalidPassword
 	}
 
