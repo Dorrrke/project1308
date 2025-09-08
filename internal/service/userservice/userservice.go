@@ -11,6 +11,7 @@ import (
 type UserStorage interface {
 	SaveUser(user models.User) error
 	GetUser(userReq models.UserRequest) (models.User, error)
+	GetUserByID(uid string) (models.User, error)
 }
 
 type UserService struct {
@@ -50,4 +51,8 @@ func (us *UserService) LoginUser(userReq models.UserRequest) (models.User, error
 	}
 
 	return dbUser, nil
+}
+
+func (us *UserService) GetUserByID(uid string) (models.User, error) {
+	return us.db.GetUserByID(uid)
 }

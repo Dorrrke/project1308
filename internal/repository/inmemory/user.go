@@ -33,3 +33,11 @@ func (storage *Storage) GetUser(userReq userDomain.UserRequest) (userDomain.User
 	}
 	return userDomain.User{}, userErrors.ErrUserNoExists
 }
+
+func (storage *Storage) GetUserByID(uid string) (userDomain.User, error) {
+	user, ok := storage.users[uid]
+	if !ok {
+		return userDomain.User{}, userErrors.ErrUserNoExists
+	}
+	return user, nil
+}
