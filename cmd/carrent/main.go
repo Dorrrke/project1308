@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Dorrrke/project1308/internal"
-	"github.com/Dorrrke/project1308/internal/repository/inmemory"
+	"github.com/Dorrrke/project1308/internal/repository/db"
 	"github.com/Dorrrke/project1308/internal/server"
 )
 
@@ -14,7 +15,11 @@ func main() {
 	cfg := internal.ReadConfig()
 	fmt.Println(cfg)
 	// TODO: конфигурация/создание хранилища\
-	db := inmemory.NewInMemoryStorage()
+	// db := inmemory.NewInMemoryStorage()
+	db, err := db.NewStorage("cfg.DBConnStr")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// TODO: конфигурация и запуск веб-сервера
 	srv := server.NewServer(cfg, db)
