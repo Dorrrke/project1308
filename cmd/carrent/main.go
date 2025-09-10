@@ -16,7 +16,7 @@ func main() {
 	fmt.Println(cfg)
 	// TODO: конфигурация/создание хранилища\
 	// db := inmemory.NewInMemoryStorage()
-	db, err := db.NewStorage("cfg.DBConnStr")
+	db, err := db.NewStorage(cfg.DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
