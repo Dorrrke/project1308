@@ -53,7 +53,6 @@ func (storage *Storage) GetAvailableCars() ([]carDomain.Car, error) {
 func (storage *Storage) AddCar(car carDomain.Car) error {
 	for key, c := range storage.cars {
 		if c.Lable == car.Lable && c.Model == car.Model && c.Year == car.Year {
-			c.Count = c.Count + car.Count
 			storage.cars[key] = c
 			return nil
 		}

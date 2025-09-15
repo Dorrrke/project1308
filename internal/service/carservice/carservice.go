@@ -53,9 +53,6 @@ func (s *CarsService) GetAvailableCars() ([]carDomain.Car, error) {
 func (s *CarsService) AddCar(car carDomain.Car) error {
 	cid := uuid.New().String()
 	car.CID = cid
-	if car.Count == 0 {
-		car.Count = 1
-	}
 
 	return s.db.AddCar(car)
 }

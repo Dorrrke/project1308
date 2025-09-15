@@ -24,7 +24,7 @@ func (cs *carsStorage) GetAllCars() ([]carDomain.Car, error) {
 	var cars []carDomain.Car
 	for rows.Next() {
 		var car carDomain.Car
-		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available, &car.Count); err != nil {
+		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
 			return nil, err
 		}
 		cars = append(cars, car)
@@ -43,7 +43,7 @@ func (us *userStorage) GetCarByID(id string) (carDomain.Car, error) {
 
 	var car carDomain.Car
 	err := us.db.QueryRow(ctx, "SELECT * FROM cars WHERE cid = $1", id).
-		Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available, &car.Count)
+		Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available)
 	if err != nil {
 		return carDomain.Car{}, err
 	}
@@ -55,7 +55,7 @@ func (cs *carsStorage) GetAvailableCars() ([]carDomain.Car, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := cs.db.Query(ctx, "SELECT * FROM cars WHERE available = true AND count > 0")
+	rows, err := cs.db.Query(ctx, "SELECT * FROM cars WHERE available = true")
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (cs *carsStorage) GetAvailableCars() ([]carDomain.Car, error) {
 	var cars []carDomain.Car
 	for rows.Next() {
 		var car carDomain.Car
-		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available, &car.Count); err != nil {
+		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
 			return nil, err
 		}
 		cars = append(cars, car)
@@ -80,8 +80,8 @@ func (cs *carsStorage) AddCar(car carDomain.Car) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := cs.db.Exec(ctx, "INSERT INTO cars (cid, lable, model, year, available, count) VALUES ($1, $2, $3, $4, $5, $6)",
-		car.CID, car.Lable, car.Model, car.Year, car.Available, car.Count)
+	_, err := cs.db.Exec(ctx, "INSERT INTO cars (cid, lable, model, year, available) VALUES ($1, $2, $3, $4, $5)",
+		car.CID, car.Lable, car.Model, car.Year, car.Available)
 	if err != nil {
 		return err
 	}
