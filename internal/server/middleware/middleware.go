@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Dorrrke/project1308/internal/domain"
 	"github.com/Dorrrke/project1308/internal/server/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
@@ -25,7 +26,7 @@ func AuthMiddleware(signer auth.HS256Signer) gin.HandlerFunc {
 			ExpectedIssuer:   signer.Issuer,
 			ExpectedAudience: signer.Audience,
 			AllowedMethods:   []string{"HS256"},
-			Leeway:           60 * time.Second,
+			Leeway:           domain.LeewayTimeout,
 		})
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
