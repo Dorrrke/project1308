@@ -4,7 +4,7 @@ import "time"
 
 // Timeouts.
 const (
-	ContextTimeout    = 5 * time.Second
+	ContextTimeout    = 6 * time.Second
 	LeewayTimeout     = 60 * time.Second
 	AccessTTL         = 15 * time.Minute
 	RefreshTTL        = 24 * 7 * time.Hour
