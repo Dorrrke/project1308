@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
-	"time"
 
+	"github.com/Dorrrke/project1308/internal/domain"
 	userDomain "github.com/Dorrrke/project1308/internal/domain/user/models"
 
 	"github.com/jackc/pgx/v5"
@@ -14,11 +14,19 @@ type userStorage struct {
 }
 
 func (us *userStorage) SaveUser(user userDomain.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
-	_, err := us.db.Exec(ctx, "INSERT INTO users (uid, name, email, password, age, phone) VALUES ($1, $2, $3, $4, $5, $6)",
-		user.UID, user.Name, user.Email, user.Password, user.Age, user.Phone)
+	_, err := us.db.Exec(
+		ctx,
+		"INSERT INTO users (uid, name, email, password, age, phone) VALUES ($1, $2, $3, $4, $5, $6)",
+		user.UID,
+		user.Name,
+		user.Email,
+		user.Password,
+		user.Age,
+		user.Phone,
+	)
 	if err != nil {
 		// TODO: обработка ошибки при существующем uid
 		// TODO: обработка ошибки - пользователь уже есть
@@ -29,7 +37,7 @@ func (us *userStorage) SaveUser(user userDomain.User) error {
 }
 
 func (us *userStorage) GetUser(userReq userDomain.UserRequest) (userDomain.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	var user userDomain.User
@@ -43,7 +51,7 @@ func (us *userStorage) GetUser(userReq userDomain.UserRequest) (userDomain.User,
 }
 
 func (us *userStorage) GetUserByID(uid string) (userDomain.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	var user userDomain.User

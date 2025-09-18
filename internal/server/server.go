@@ -3,9 +3,9 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Dorrrke/project1308/internal"
+	"github.com/Dorrrke/project1308/internal/domain"
 	carDomain "github.com/Dorrrke/project1308/internal/domain/cars/models"
 	userDomain "github.com/Dorrrke/project1308/internal/domain/user/models"
 	"github.com/Dorrrke/project1308/internal/server/auth"
@@ -45,12 +45,13 @@ func NewServer(cfg internal.Config, db Storage, log *zerolog.Logger) *RentAPI {
 		Secret:     []byte("UltraH@rdSecretKey123"),
 		Issuer:     "rent-service",
 		Audience:   "rent-client",
-		AccessTTL:  15 * time.Minute,
-		RefreshTTL: 24 * 7 * time.Hour,
+		AccessTTL:  domain.AccessTTL,
+		RefreshTTL: domain.RefreshTTL,
 	}
 
 	httpSrv := http.Server{
-		Addr: fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), // localhost:8080
+		Addr:              fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), // localhost:8080
+		ReadHeaderTimeout: domain.ReadHeaderTimeout,
 	}
 
 	api := RentAPI{
@@ -110,7 +111,7 @@ func (api *RentAPI) refresh(ctx *gin.Context) {
 		ExpectedIssuer:   api.jwtSigner.Issuer,
 		ExpectedAudience: api.jwtSigner.Audience,
 		AllowedMethods:   []string{"HS256"},
-		Leeway:           60 * time.Second,
+		Leeway:           domain.LeewayTimeout,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -128,6 +129,6 @@ func (api *RentAPI) refresh(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("refresh_token", newRefresh, 3600*24*7, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", newRefresh, domain.CookieMaxAge, "/", "localhost", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"access": access})
 }

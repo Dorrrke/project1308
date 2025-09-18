@@ -50,7 +50,7 @@ func (us *UserService) LoginUser(userReq models.UserRequest) (models.User, error
 		return models.User{}, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userReq.Password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userReq.Password)); err != nil {
 		return models.User{}, erros.ErrInvalidPassword
 	}
 

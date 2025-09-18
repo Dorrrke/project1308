@@ -22,13 +22,13 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to create db")
 	}
 
-	if err := db.Migrations(cfg.DSN, cfg.MigratePath); err != nil {
+	if err = db.Migrations(cfg.DSN, cfg.MigratePath, &log); err != nil {
 		log.Fatal().Err(err).Msg("failed to migrate db")
 	}
 
 	srv := server.NewServer(cfg, database, &log)
 
-	if err := srv.Run(); err != nil {
+	if err = srv.Run(); err != nil {
 		log.Fatal().Err(err).Msg("failed to start server")
 	}
 }

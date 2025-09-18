@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog"
 )
 
 type Storage struct {
@@ -27,7 +27,7 @@ func NewStorage(connStr string) (*Storage, error) {
 	}, nil
 }
 
-func Migrations(dsn string, migratePath string) error { // /migrations
+func Migrations(dsn string, migratePath string, log *zerolog.Logger) error { // /migrations
 	mPath := fmt.Sprintf("file://%s", migratePath) // file:///migrations
 
 	m, err := migrate.New(mPath, dsn)
@@ -35,13 +35,13 @@ func Migrations(dsn string, migratePath string) error { // /migrations
 		return err
 	}
 
-	if err := m.Up(); err != nil {
+	if err = m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
 			return err
 		}
-		log.Println("Database already up to date")
+		log.Debug().Msg("No changes in migrations")
 	}
 
-	log.Println("Migration completed")
+	log.Debug().Msg("Migrations completed")
 	return nil
 }

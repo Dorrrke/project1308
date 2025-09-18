@@ -39,7 +39,7 @@ func (s *CarsService) GetCarByID(id string) (carDomain.Car, error) {
 	}
 
 	car.Available = false
-	if err := s.db.UpdateAvailable(id); err != nil {
+	if err = s.db.UpdateAvailable(id); err != nil {
 		return carDomain.Car{}, err
 	}
 

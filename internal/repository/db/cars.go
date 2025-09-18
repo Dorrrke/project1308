@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
-	"time"
 
+	"github.com/Dorrrke/project1308/internal/domain"
 	carDomain "github.com/Dorrrke/project1308/internal/domain/cars/models"
 	"github.com/jackc/pgx/v5"
 )
@@ -13,7 +13,7 @@ type carsStorage struct {
 }
 
 func (cs *carsStorage) GetAllCars() ([]carDomain.Car, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	rows, err := cs.db.Query(ctx, "SELECT * FROM cars")
@@ -24,13 +24,13 @@ func (cs *carsStorage) GetAllCars() ([]carDomain.Car, error) {
 	var cars []carDomain.Car
 	for rows.Next() {
 		var car carDomain.Car
-		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
+		if err = rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
 			return nil, err
 		}
 		cars = append(cars, car)
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -38,7 +38,7 @@ func (cs *carsStorage) GetAllCars() ([]carDomain.Car, error) {
 }
 
 func (us *userStorage) GetCarByID(id string) (carDomain.Car, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	var car carDomain.Car
@@ -52,7 +52,7 @@ func (us *userStorage) GetCarByID(id string) (carDomain.Car, error) {
 }
 
 func (cs *carsStorage) GetAvailableCars() ([]carDomain.Car, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	rows, err := cs.db.Query(ctx, "SELECT * FROM cars WHERE available = true")
@@ -63,13 +63,13 @@ func (cs *carsStorage) GetAvailableCars() ([]carDomain.Car, error) {
 	var cars []carDomain.Car
 	for rows.Next() {
 		var car carDomain.Car
-		if err := rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
+		if err = rows.Scan(&car.CID, &car.Lable, &car.Model, &car.Year, &car.Available); err != nil {
 			return nil, err
 		}
 		cars = append(cars, car)
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -77,7 +77,7 @@ func (cs *carsStorage) GetAvailableCars() ([]carDomain.Car, error) {
 }
 
 func (cs *carsStorage) AddCar(car carDomain.Car) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	_, err := cs.db.Exec(ctx, "INSERT INTO cars (cid, lable, model, year, available) VALUES ($1, $2, $3, $4, $5)",
@@ -91,7 +91,7 @@ func (cs *carsStorage) AddCar(car carDomain.Car) error {
 
 // TODO: добавить в аргументы новй статус Available.
 func (cs *carsStorage) UpdateAvailable(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
 	defer cancel()
 
 	_, err := cs.db.Exec(ctx, "UPDATE cars SET available = false WHERE cid = $1", id)

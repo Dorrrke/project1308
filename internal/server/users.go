@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/Dorrrke/project1308/internal/domain"
 	"github.com/Dorrrke/project1308/internal/domain/user/models"
 	"github.com/Dorrrke/project1308/internal/service/userservice"
 
@@ -63,7 +64,7 @@ func (srv *RentAPI) login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("refresh_token", refresh, 3600*24*7, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", refresh, domain.CookieMaxAge, "/", "localhost", false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"user":   user,
@@ -79,7 +80,14 @@ func (srv *RentAPI) profile(ctx *gin.Context) {
 	}
 
 	usecase := userservice.NewUserService(srv.db)
-	user, err := usecase.GetUserByID(userID.(string))
+	uid, ok := userID.(string)
+	if !ok {
+		srv.log.Error().Msg("userID is not a string")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "userID is not a string"})
+		return
+	}
+
+	user, err := usecase.GetUserByID(uid)
 	if err != nil {
 		if errors.Is(err, userErrors.ErrUserNoExists) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
