@@ -7,4 +7,4 @@ FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /app/carrent .
 EXPOSE 8080
-CMD ["./carrent"]
+CMD ["./carrent", "--debug"]

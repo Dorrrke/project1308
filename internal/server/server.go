@@ -10,6 +10,7 @@ import (
 	userDomain "github.com/Dorrrke/project1308/internal/domain/user/models"
 	"github.com/Dorrrke/project1308/internal/server/auth"
 	"github.com/Dorrrke/project1308/internal/server/middleware"
+	"github.com/rs/zerolog"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,9 +37,10 @@ type RentAPI struct {
 	srv       *http.Server
 	db        Storage
 	jwtSigner auth.HS256Signer
+	log       *zerolog.Logger
 }
 
-func NewServer(cfg internal.Config, db Storage) *RentAPI {
+func NewServer(cfg internal.Config, db Storage, log *zerolog.Logger) *RentAPI {
 	sigenr := auth.HS256Signer{
 		Secret:     []byte("UltraH@rdSecretKey123"),
 		Issuer:     "rent-service",
@@ -55,6 +57,7 @@ func NewServer(cfg internal.Config, db Storage) *RentAPI {
 		srv:       &httpSrv,
 		db:        db,
 		jwtSigner: sigenr,
+		log:       log,
 	}
 
 	api.configRouter()
@@ -71,13 +74,16 @@ func (api *RentAPI) Shutdown() error {
 }
 
 func (api *RentAPI) configRouter() {
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+
+	router.Use(middleware.ZerologMiddleware(api.log))
 
 	users := router.Group("/users")
 	users.POST("/login", api.login)
 	users.POST("/register", api.register)
 	users.GET("/profile", middleware.AuthMiddleware(api.jwtSigner), api.profile)
-	users.GET("/cars")
+	// users.GET("/cars")
 
 	cars := router.Group("/cars")
 	cars.GET("/list", api.getAllCars)

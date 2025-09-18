@@ -12,9 +12,11 @@ import (
 
 func (srv *RentAPI) getRent(ctx *gin.Context) {
 	carID := ctx.Param("id")
+	srv.log.Debug().Str("carID", carID).Msg("car id from url")
 	usecase := carservice.NewUserService(srv.db)
 	car, err := usecase.GetCarByID(carID)
 	if err != nil {
+		srv.log.Error().Err(err).Msg("failed to get car by id")
 		if errors.Is(err, carErrors.ErrCarNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -40,6 +42,7 @@ func (srv *RentAPI) getAllCars(ctx *gin.Context) {
 	usecase := carservice.NewUserService(srv.db)
 	cars, err := usecase.GetAllCars()
 	if err != nil {
+		srv.log.Error().Err(err).Msg("failed to get all cars")
 		if errors.Is(err, carErrors.ErrCarsNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -55,6 +58,7 @@ func (srv *RentAPI) getAvailableCars(ctx *gin.Context) {
 	usecase := carservice.NewUserService(srv.db)
 	cars, err := usecase.GetAvailableCars()
 	if err != nil {
+		srv.log.Error().Err(err).Msg("failed to get available cars")
 		if errors.Is(err, carErrors.ErrCarNotAvailable) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
@@ -69,12 +73,14 @@ func (srv *RentAPI) getAvailableCars(ctx *gin.Context) {
 func (srv *RentAPI) addCar(ctx *gin.Context) {
 	var car carDomain.Car
 	if err := ctx.BindJSON(&car); err != nil {
+		srv.log.Error().Err(err).Msg("failed to bind car")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	usecase := carservice.NewUserService(srv.db)
 	if err := usecase.AddCar(car); err != nil {
+		srv.log.Error().Err(err).Msg("failed to add car")
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

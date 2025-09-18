@@ -7,6 +7,7 @@ import (
 
 	"github.com/Dorrrke/project1308/internal/server/auth"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 )
 
 func AuthMiddleware(signer auth.HS256Signer) gin.HandlerFunc {
@@ -34,5 +35,23 @@ func AuthMiddleware(signer auth.HS256Signer) gin.HandlerFunc {
 
 		ctx.Set("userID", claims.UserID)
 		ctx.Next()
+	}
+}
+
+func ZerologMiddleware(log *zerolog.Logger) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		start := time.Now()
+
+		ctx.Next()
+
+		duration := time.Since(start)
+
+		log.Info().
+			Str("method", ctx.Request.Method).
+			Str("path", ctx.Request.URL.Path).
+			Int("status", ctx.Writer.Status()).
+			Str("client_ip", ctx.ClientIP()).
+			Dur("duration", duration).
+			Send()
 	}
 }

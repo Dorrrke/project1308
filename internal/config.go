@@ -18,6 +18,7 @@ type Config struct {
 	Port        int
 	DSN         string
 	MigratePath string
+	Debug       bool
 }
 
 func ReadConfig() Config {
@@ -26,6 +27,7 @@ func ReadConfig() Config {
 	flag.IntVar(&cfg.Port, "port", defPort, "указание порта для запуска сервера")
 	flag.StringVar(&cfg.DSN, "dsn", defDNS, "указание строки подключения к БД")
 	flag.StringVar(&cfg.MigratePath, "migrate-path", defMigratePath, "указание пути к миграциям")
+	flag.BoolVar(&cfg.Debug, "debug", false, "указание уровня логгирования")
 	flag.Parse()
 
 	cfg.DSN = cmp.Or(os.Getenv("DB_DNS"), defDNS)
