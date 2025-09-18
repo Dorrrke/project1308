@@ -3,13 +3,14 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Dorrrke/project1308/internal"
+	"github.com/Dorrrke/project1308/internal/domain"
 	carDomain "github.com/Dorrrke/project1308/internal/domain/cars/models"
 	userDomain "github.com/Dorrrke/project1308/internal/domain/user/models"
 	"github.com/Dorrrke/project1308/internal/server/auth"
 	"github.com/Dorrrke/project1308/internal/server/middleware"
+	"github.com/rs/zerolog"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,25 +37,28 @@ type RentAPI struct {
 	srv       *http.Server
 	db        Storage
 	jwtSigner auth.HS256Signer
+	log       *zerolog.Logger
 }
 
-func NewServer(cfg internal.Config, db Storage) *RentAPI {
+func NewServer(cfg internal.Config, db Storage, log *zerolog.Logger) *RentAPI {
 	sigenr := auth.HS256Signer{
 		Secret:     []byte("UltraH@rdSecretKey123"),
 		Issuer:     "rent-service",
 		Audience:   "rent-client",
-		AccessTTL:  15 * time.Minute,
-		RefreshTTL: 24 * 7 * time.Hour,
+		AccessTTL:  domain.AccessTTL,
+		RefreshTTL: domain.RefreshTTL,
 	}
 
 	httpSrv := http.Server{
-		Addr: fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), // localhost:8080
+		Addr:              fmt.Sprintf("%s:%d", cfg.Host, cfg.Port), // localhost:8080
+		ReadHeaderTimeout: domain.ReadHeaderTimeout,
 	}
 
 	api := RentAPI{
 		srv:       &httpSrv,
 		db:        db,
 		jwtSigner: sigenr,
+		log:       log,
 	}
 
 	api.configRouter()
@@ -71,13 +75,16 @@ func (api *RentAPI) Shutdown() error {
 }
 
 func (api *RentAPI) configRouter() {
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+
+	router.Use(middleware.ZerologMiddleware(api.log))
 
 	users := router.Group("/users")
 	users.POST("/login", api.login)
 	users.POST("/register", api.register)
 	users.GET("/profile", middleware.AuthMiddleware(api.jwtSigner), api.profile)
-	users.GET("/cars")
+	// users.GET("/cars")
 
 	cars := router.Group("/cars")
 	cars.GET("/list", api.getAllCars)
@@ -104,7 +111,7 @@ func (api *RentAPI) refresh(ctx *gin.Context) {
 		ExpectedIssuer:   api.jwtSigner.Issuer,
 		ExpectedAudience: api.jwtSigner.Audience,
 		AllowedMethods:   []string{"HS256"},
-		Leeway:           60 * time.Second,
+		Leeway:           domain.LeewayTimeout,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -122,6 +129,6 @@ func (api *RentAPI) refresh(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("refresh_token", newRefresh, 3600*24*7, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", newRefresh, domain.CookieMaxAge, "/", "localhost", false, true)
 	ctx.JSON(http.StatusOK, gin.H{"access": access})
 }

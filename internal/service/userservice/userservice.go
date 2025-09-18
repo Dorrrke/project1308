@@ -3,6 +3,7 @@ package userservice
 import (
 	erros "github.com/Dorrrke/project1308/internal/domain/user/errors"
 	"github.com/Dorrrke/project1308/internal/domain/user/models"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-playground/validator/v10"
@@ -31,6 +32,9 @@ func (us *UserService) SaveUser(user models.User) error {
 		return err
 	}
 
+	uid := uuid.New().String()
+	user.UID = uid
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -46,7 +50,7 @@ func (us *UserService) LoginUser(userReq models.UserRequest) (models.User, error
 		return models.User{}, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userReq.Password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(userReq.Password)); err != nil {
 		return models.User{}, erros.ErrInvalidPassword
 	}
 

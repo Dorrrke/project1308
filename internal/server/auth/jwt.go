@@ -31,8 +31,9 @@ HMAC using S
 */
 
 type Claims struct {
-	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
+
+	UserID string `json:"user_id"`
 }
 
 type HS256Signer struct {
@@ -44,7 +45,7 @@ type HS256Signer struct {
 }
 
 func generateJTI() string {
-	b := make([]byte, 16)
+	b := make([]byte, 16) //nolint:mnd // use once
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
 }

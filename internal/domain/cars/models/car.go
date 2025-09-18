@@ -7,5 +7,4 @@ type Car struct {
 	Year      int    `json:"year"`
 	Price     int    `json:"price"`
 	Available bool   `json:"available"`
-	Count     int    `json:"count"`
 }

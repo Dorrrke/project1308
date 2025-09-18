@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -38,7 +39,7 @@ func (s HS256Signer) ParseAccessToken(tokenStr string, opt ParseOptions) (*Claim
 	}
 
 	if !tkn.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, errors.New("token is invalid")
 	}
 
 	return claims, nil
@@ -50,7 +51,7 @@ func (s HS256Signer) ParseRefreshToken(tokenStr string, opt ParseOptions) (*jwt.
 	tkn, err := jwt.ParseWithClaims(
 		tokenStr,
 		claims,
-		func(t *jwt.Token) (any, error) {
+		func(_ *jwt.Token) (any, error) {
 			return s.Secret, nil
 		},
 		jwt.WithIssuer(opt.ExpectedIssuer),
@@ -64,7 +65,7 @@ func (s HS256Signer) ParseRefreshToken(tokenStr string, opt ParseOptions) (*jwt.
 	}
 
 	if !tkn.Valid {
-		return nil, fmt.Errorf("refresh is invalid")
+		return nil, errors.New("token is invalid")
 	}
 
 	return claims, nil
