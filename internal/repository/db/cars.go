@@ -89,6 +89,30 @@ func (cs *carsStorage) AddCar(car carDomain.Car) error {
 	return nil
 }
 
+func (cs *carsStorage) AddCars(cars []carDomain.Car) error {
+	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
+	defer cancel()
+
+	tx, err := cs.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	_, err = tx.Prepare(ctx, "add_car", "INSERT INTO cars (cid, lable, model, year, available) VALUES ($1, $2, $3, $4, $5)")
+	if err != nil {
+		return err
+	}
+
+	for _, car := range cars {
+		_, err = tx.Exec(ctx, "add_car", car.CID, car.Lable, car.Model, car.Year, car.Available)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 // TODO: добавить в аргументы новй статус Available.
 func (cs *carsStorage) UpdateAvailable(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), domain.ContextTimeout)
