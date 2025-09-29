@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -70,8 +71,8 @@ func (api *RentAPI) Run() error {
 	return api.srv.ListenAndServe()
 }
 
-func (api *RentAPI) Shutdown() error {
-	return nil
+func (api *RentAPI) Shutdown(ctx context.Context) error {
+	return api.srv.Shutdown(ctx)
 }
 
 func (api *RentAPI) configRouter() {
